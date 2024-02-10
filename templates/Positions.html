@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
+    <meta name="description" content="Список должностей">
+    <title>Список должностей</title>
+    {% load static %}
+    <!--Свои стили-->
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="shortcut icon" href="{% static 'favicon.ico' %}">
+    <!--------------------------------------------------------------------------Скрипт-------------------------------------------------------------------------->
+    <script type="text/javascript" src="{% static 'scripts/general_functions.js' %}" defer></script>
+    <script type="text/javascript" src="{% static 'scripts/Positions.js' %}" defer></script>
+    <!--Bootstrap-->
+    <link rel="stylesheet" href="{% static 'bootstrap_5/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'bootstrap_icons/font/bootstrap-icons.css' %}">
+    <script src="{% static 'bootstrap_5/js/bootstrap.bundle.js' %}" async defer></script>
+</head>
+<body>
+    <header class="mb-3 pb-5 mb-md-3 mb-lg-5 mb-xl-5 mb-xxl-3">
+        <div class="row header fixed-top bg-light">
+            <nav class="navbar navbar-expand-lg col-10 col-sm-11">
+                <div class="container-fluid header">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggler"
+                            aria-controls="navbarToggler" aria-expanded="false" aria-label="Переключатель навигации">
+                        <span class="navbar-toggler-icon align-text-top"></span> Меню
+                    </button>
+                    <a class="navbar-brand text-wrap text-center" href="{% url "positions" %}">Тестовое задание</a>
+                    <div class="collapse navbar-collapse" id="navbarToggler">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0 col-lg-9">
+                            <li class="nav-item align-self-lg-center text-lg-center">
+                                <a class="nav-link active" aria-current="page" href="{% url "positions" %}">Сотрудники</a>
+                            </li>
+                            <li class="nav-item align-self-lg-center text-lg-center">
+                                <a class="nav-link active" aria-current="page" href="{% url "positions" %}">Должности</a>
+                            </li>
+                        </ul>
+                        <form class="col-lg-3 col-xxl-3" role="search">
+                            <div class="input-group">
+                                <input class="form-control me-2" type="search" id="search_filter" placeholder="Поиск в таблице" aria-label="search"
+                                       oninput="searchFor()">
+                                <!--<input class="form-control me-2" type="search" placeholder="Поиск в отфильтрованных данных" aria-label="Поиск" style="width: 300px;">-->
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </nav>
+{#            <nav class="navbar navbar-right col-2 col-sm-1 align-items-start align-items-lg-center justify-content-end">#}
+{#                <input class="btn btn-outline-danger" type="button" onclick="location.href='{% url 'logout' %}'" value="Выйти">#}
+{#            </nav>#}
+        </div>
+    </header>
+
+    <!--Модальное окно "Запись"-->
+    <div class="modal fade" id="modal_window" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form method="POST" id="form_wrapper" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                    <div class="modal-body">
+                        <h3 style="text-align: center;">Должность.</h3>
+                        <table class="text-center" id="add_data" style="width: 100%">
+                            <thead style="font-style: italic; vertical-align: middle;" id="inputData">
+                                <tr>
+                                    <th scope="col" style="width: 23%">Название</th>
+                                    <td>
+                                        <div class="form-group want-valid">
+                                            <input name="t_position_name" class="form-control want-valid" type="text"
+                                                   placeholder="Название должности"
+                                                   aria-label="t_position_name" pattern="(^((.|\s)*\S(.|\s)*)$)"
+                                                   aria-describedby="validation_t_position_name_feedback" required>
+                                            <div id="validation_t_position_name_feedback" class="invalid-tooltip">
+                                                Пожалуйста, введите не пустое название должности!
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer" style="align-self: center;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        <button type="submit" class="btn btn-success" id="add_data_positions"
+                                data-bs-target="input_position_modal">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!--Модальное окно "Подтверждение удаления записи"-->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <h3 style="text-align: center;">Вы действительно хотите удалить запись?</h3>
+                </div>
+                <div class="modal-footer" style="align-self: center;">
+                    <button type="button" id="yes_delete_button" class="btn btn-primary" data-bs-dismiss="modal">Да</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Нет</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main role="main">
+        <div class="container py-2 shadow-lg" style="position: relative">
+            <div class="row pt-1 ps-2 d-flex justify-content-end">
+                <div class="col-3 d-flex justify-content-end">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="toggleCheck"
+                               onchange="change_pagination_state()" checked>
+                        <label class="form-check-label" for="toggleCheck">Постраничное отображение</label>
+                    </div>
+                </div>
+            </div>
+            <div class="row py-2">
+                <div class="col">
+                    <a id="add_position_button" class="btn btn-primary"
+                       data-bs-toggle="modal" data-bs-target="#modal_window">Добавить</a>
+                </div>
+                <div class="col text-end">
+                    <a id="change_position_button" class="btn btn-warning"
+                       data-bs-toggle="modal" data-bs-target="#modal_window" data-change="1">Изменить</a>
+                    <a id="delete_position_button" class="btn btn-danger"
+                       data-bs-toggle="modal" data-bs-target="#deleteModal">Удалить</a>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered table-hover text-center align-middle" id="table_for_data">
+                    <thead>
+                        <tr class = "align-middle">
+                            <th class="sticky-top bg-white sorted" id="t_position_name">Наименование должности</th>
+                        </tr>
+                    </thead>
+                    <tbody class="page_data" id="page_data">
+                    </tbody>
+                </table>
+            </div>
+            <div class="row ms-0">
+                <nav aria-label="Навигация" id="pagination">
+                    <div class="row pt-sm-2 pd-md-1 pt-lg-0" style="position: relative">
+                        <ul class="pagination justify-content-center ms-1">
+                            <li onclick="prev_page(0)" class="page-item prev_page0">
+                                <a class="page-link" href="#" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                    <span class="sr-only">Предыдущая</span>
+                                </a>
+                            </li>
+                            <li onclick="next_page(0)" class="page-item next_page0">
+                                <a class="page-link" href="#" aria-label="Next">
+                                    <span class="sr-only">Следующая</span>
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="input-group" style="position: absolute;">
+                            <span class="input-group-text"
+                                  style="position: absolute; right: 48px;">Показывать по </span>
+                            <select class="form-select" id="show_by_0" style="width: 70px; position: absolute; right: -20px;"
+                                    aria-label="show_by" onchange="change_page_size(0)">
+                                <option>5</option>
+                                <option>10</option>
+                                <option>15</option>
+                            </select>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+<script>
+    let position_data1 = {{ positions_list|safe }};
+</script>
