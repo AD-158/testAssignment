@@ -169,7 +169,7 @@ function add_pagination(number_of_pg, pagination_number, active_page_number) {
 function next_page(i) {
     if ((pages[i].length - 1) > current_page[i]) {
         current_page[i]++;
-        change_page(i, current_page[i]);
+        get_data_to_page(current_page[i])
     }
 }
 
@@ -177,65 +177,8 @@ function next_page(i) {
 function prev_page(i) {
     if ((current_page[i] < pages[i].length) && (current_page[i] !== 0)) {
         current_page[i]--;
-        change_page(i, current_page[i]);
+        get_data_to_page(current_page[i])
     }
-}
-
-// ФИЛЬТРЫ
-
-// Цех выбран
-function set_default_division_value() {
-    if (selected_division !== "") {
-        document.getElementById("division_data").value = selected_division;
-        selected_division = ""
-    } else {
-        document.getElementById("division_data").value = window.localStorage.getItem('division');
-    }
-}
-
-// Тип персонала выбран
-function set_default_staff_type_value() {
-    if (selected_staff_type !== "") {
-        document.getElementById("staff_data").value = selected_staff_type;
-        selected_staff_type = ""
-    } else
-        document.getElementById("staff_data").value = staff_data[0].staff_type_name;
-}
-
-// Изменение цеха
-function change_division_value() {
-    selected_division = document.getElementById("division_data").value;
-    document.getElementById('search_filter').value = "";
-    if (document.getElementById('toggleCheck'))
-        document.getElementById('toggleCheck').checked = true;
-    get_data_to_page(0).then(() => {document.querySelector(".navbar-brand").focus();}).catch(function (err) {console.log(err)});
-}
-
-// Изменение типа персонала
-function change_staff_type_value() {
-    selected_staff_type = document.getElementById("staff_data").value;
-    document.getElementById('search_filter').value = "";
-    document.getElementById('toggleCheck').checked = true;
-    get_data_to_page(0).then(() => {document.querySelector(".navbar-brand").focus();}).catch(function (err) {console.log(err)});
-}
-
-// Потеря фокуса (цех)
-function remember_division_value_and_clear_input() {
-    selected_division = document.getElementById("division_data").value;
-    document.getElementById("division_data").value = "";
-}
-
-// Потеря фокуса (тип персонала)
-function remember_staff_type_value_and_clear_input() {
-    selected_staff_type = document.getElementById("staff_data").value;
-    document.getElementById("staff_data").value = "";
-}
-
-// Выбор даты
-function change_date_value() {
-    document.getElementById('search_filter').value = "";
-    document.getElementById('toggleCheck').checked = true;
-    get_data_to_page(0).then(() => {document.querySelector(".navbar-brand").focus();}).catch(function (err) {console.log(err)});
 }
 
 // Выбор количества показываемых строк
@@ -259,77 +202,11 @@ function change_pagination_state() {
         .catch(function (err) { console.log(err) });
 }
 
-// Включить/нет фиксацию таблицы
-function change_fixation_state() {
-    let date = document.getElementById("change_date").value;
-    date = date.substring(0, 4) + '-' + date.substring(5, 7) + '-01';
-    let val = document.querySelector("#division_list option[value='" + document.getElementById("division_data").value + "']");
-    val = val ? parseInt(val.dataset.value) : 1;
-    // отправляемый массив
-    let sent_data = {
-        "date": date,
-        "division": val,
-        "organic_number": user,
-        "state": document.getElementById("premiumFix").checked,
-    }
-    fetch('http://127.0.0.1:8000/api/premium_fixation_api/create/', {
-        method: 'POST',
-        headers: {
-            'Content-type': 'application/json',
-            'X-CSRFToken': csrftoken,
-        },
-        body: JSON.stringify(sent_data)
-    }).catch(function (err) { console.log(err) });
-    get_data_to_page(0)
-        .then(() => {
-            if (!document.querySelector('.no_data'))
-                document.getElementById('pagination').hidden = document.getElementById('toggleCheck').checked !== true;
-        })
-        .then(() => {
-            if (document.getElementById("search_filter").value !== "")
-                searchFor();
-        })
-        .catch(function (err) { console.log(err) });
-}
-
-// Генерация datalist (подразделения)
-function generate_division_datalist(arr) {
-    arr.forEach(element => {
-        let val = element.division;
-        val = standardize_division_number(val);
-        if (val !== '000') {
-            insert_new_element(create_element("option", {"data-value":element.division, "value":val+" - "+element.division_name}),
-            ".select_division", 1, "beforeend");
-        }
-    });
-}
-
-// Добавление номера цеха
-function standardize_division_number(val) {
-    let char = '';
-    if (val instanceof Array) {
-        val.forEach(el => {
-            const parsedVal = isNaN(parseInt(el)) ? "" : parseInt(el);
-            const prefix = parsedVal === "" ? "" : (parsedVal < 10 ? '00' : (parsedVal < 100 ? '0' : ''));
-            char = char === '' ? prefix + parsedVal : char + ',' + prefix + parsedVal;
-        })
-        return char;
-    }
-    else {
-        const parsedVal = isNaN(parseInt(val)) ? "" : parseInt(val);
-        const prefix = parsedVal === "" ? "" : (parsedVal < 10 ? '00' : (parsedVal < 100 ? '0' : ''));
-        return prefix + parsedVal;
-    }
-}
-
 // Генерация datalist (Тип персонала)
-function generate_staff_type_datalist(arr) {
+function generate_position_datalist(arr) {
     arr.forEach(element => {
-        insert_new_element(create_element("option", {"data-value":element.staff_type, "value":element.staff_type_name}),
-            ".select_staff", 1, "beforeend");
-        // document.querySelector(".select_staff").insertAdjacentHTML("beforeend",
-        //     '<option' + ' data-value="' + element.staff_type + '" value="' + element.staff_type_name + '"></option>'
-        // );
+        insert_new_element(create_element("option", {"data-value":element.t_position_id, "value":element.t_position_name}),
+            ".select_position", 1, "beforeend");
     });
 }
 
@@ -344,31 +221,6 @@ function table_resize () {
     document.querySelector('.table-responsive').style.overflowY = "auto";
 }
 
-// Установить значения в localStorage по умолчанию, если их там нет
-function set_default_localStorage_values() {
-    // Подразделение
-    if ((window.localStorage.getItem('division') === "") || (!window.localStorage.getItem('division'))) {
-        let val = parseInt(division_data[0].division) === 0 ? division_data[1].division : division_data[0].division;
-        val = standardize_division_number(val);
-        parseInt(division_data[0].division) === 0 ? window.localStorage.setItem('division', val + ' - ' + division_data[1].division_name)
-            : window.localStorage.setItem('division', val + ' - ' + division_data[0].division_name);
-    }
-    // Тип персонала
-    if ((window.localStorage.getItem('staff_type') === "") || (!window.localStorage.getItem('staff_type'))) {
-        window.localStorage.setItem('staff_type', staff_data[0].staff_type_name);
-    }
-    // Дата
-    if (window.localStorage.getItem('date')) {
-        document.getElementById("change_date").value = window.localStorage.getItem('date').substring(0, 4) +
-            '-' + window.localStorage.getItem('date').substring(5, 7)
-    } else if (document.getElementById("change_date") ) {
-        document.getElementById("change_date").value = new Date().getFullYear() + "-" +
-            (String(new Date().getMonth() + 1).padStart(2, '0'));
-        window.localStorage.setItem('date', new Date().getFullYear() + "-" +
-            (String(new Date().getMonth() + 1).padStart(2, '0')));
-    }
-}
-
 // Очистить таблицу, спрятать таблицу и пагинацию (если надо) к ней
 function clear_table_and_hide_pagination(turn_off_pagination, table_body_name, table_name, pagination_name) {
     document.querySelector(table_body_name).innerHTML = "";
@@ -376,25 +228,6 @@ function clear_table_and_hide_pagination(turn_off_pagination, table_body_name, t
     if (turn_off_pagination === 1)
         document.getElementById(pagination_name).hidden = true;
 }
-
-// Выравнивание столбца
-function col_align(header_rows_count, row_count, align_col, align_type) {
-    row_count = isNaN(parseInt(row_count)) ?
-        (typeof document.getElementById("toggleCheck" === "undefined") ? (parseInt(filtered_user_data1.length))
-            : (document.getElementById("toggleCheck").checked ? parseInt(document.getElementById("show_by_0").value)
-                : parseInt(filtered_user_data1.length)))
-        : parseInt(row_count)
-    for (let i = header_rows_count; i < (header_rows_count + row_count); i++) {
-        if (document.querySelectorAll('tr:not(.modal_tr)')[i]) {
-            if (document.querySelectorAll('tr:not(.modal_tr)')[i].querySelectorAll('td')[align_col]) {
-                document.querySelectorAll('tr:not(.modal_tr)')[i].querySelectorAll('td')[align_col].classList.add(align_type);
-            }
-        }
-    }
-}
-
-// Индекс элемента
-const getNodeIndex = elm => [...elm.parentNode.children].findIndex(i => i === elm);
 
 // Сортировка по параметру
 const sort_by = (field, reverse, primer) => {
@@ -409,19 +242,11 @@ const sort_by = (field, reverse, primer) => {
 
 // Сортировка массива
 function sort_array(arr, id, reverse) {
-    if ((id === "t_position_name"))
-        // || (id === "expansion_name") || (id === "responsible") || (id === "division_name") || (id === "staff_type_name"))
+    if ((id === "t_position_name") || (id === "t_employees_last_name") || (id === "t_employees_first_name")
+        || (id === "t_employees_patronymic") || (id === "t_employees_position") || (id === "t_employees_residential_address"))
         arr.sort(sort_by(id, reverse, (a) => a.toLowerCase()));
-    // else if (typeof arr[0].expansion_id !== "undefined" && (id === "division" || id === "staff_type"))
-    //     arr.sort(sort_by(id, reverse, (a) => a.length));
-    // else if ((id === "organic_number") || (id === "division") || (id === "staff_type"))
-    //     arr.sort(sort_by(id, reverse, parseInt));
-    // else if ((id === "completion_date") || (id === "date"))
-    //     arr.sort(sort_by(id, reverse, (a) => new Date(a)));
-    // else if (id === "factual_premium")
-    //     arr.sort(sort_by(id, reverse, parseFloat));
-    // else
-    //     arr.sort(sort_by(id, reverse, parseFloat));
+    else if ((id === "t_employees_birth_date"))
+        arr.sort(sort_by(id, reverse, (a) => new Date(a)));
 }
 
 // Добавить сортировку

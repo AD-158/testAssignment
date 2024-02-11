@@ -121,3 +121,98 @@ EXCEPTION WHEN OTHERS THEN
 END
 $$;
 COMMENT ON FUNCTION public.afunc_delete_position_json(a_position_id integer) IS 'Удаление должности';
+
+CREATE OR REPLACE FUNCTION public.afunc_get_employees_json() RETURNS json
+    LANGUAGE 'plpgsql'
+AS $BODY$
+BEGIN
+	RETURN (SELECT json_agg(a) FROM (
+        SELECT
+            "t_employees_id",
+			"t_employees_last_name",
+			"t_employees_first_name",
+			"t_employees_patronymic",
+			"t_employees_birth_date",
+			"t_employees_position",
+			"t_position_name",
+			"t_employees_residential_address"
+        FROM
+            public."t_employees"
+		LEFT JOIN
+                public."t_position"
+		ON
+		    public."t_employees"."t_employees_position" = public."t_position"."t_position_id"
+        ORDER BY
+            "t_employees_id"
+	) a);
+END
+$BODY$;
+COMMENT ON FUNCTION public.afunc_get_employees_json() IS 'Получение списка сотрудников в формате JSON';
+
+CREATE OR REPLACE FUNCTION public.afunc_create_employee_json(a_record json) RETURNS smallint
+    LANGUAGE 'plpgsql'
+AS $BODY$
+BEGIN
+    INSERT INTO "t_employees" ("t_employees_last_name", "t_employees_first_name", "t_employees_patronymic",
+							   "t_employees_birth_date", "t_employees_position", "t_employees_residential_address")
+    VALUES ((a_record->>'t_employees_last_name')::varchar, (a_record->>'t_employees_first_name')::varchar,
+			 (a_record->>'t_employees_patronymic')::varchar, (a_record->>'t_employees_birth_date')::date,
+			 (a_record->>'t_employees_position')::integer, (a_record->>'t_employees_residential_address')::varchar
+		   );
+    RETURN 201;
+EXCEPTION WHEN OTHERS THEN
+    RETURN 500;
+END
+$BODY$;
+COMMENT ON FUNCTION public.afunc_create_employee_json(json) IS 'Добавление сотрудника';
+
+CREATE OR REPLACE FUNCTION public.afunc_update_employee_json(a_record json) RETURNS smallint
+    LANGUAGE 'plpgsql'
+AS $BODY$
+BEGIN
+    UPDATE "t_employees" AS t_e
+    SET
+		"t_employees_last_name" = (a_record->>'t_employees_last_name')::varchar,
+		"t_employees_first_name" = (a_record->>'t_employees_first_name')::varchar,
+		"t_employees_patronymic" = (a_record->>'t_employees_patronymic')::varchar,
+		"t_employees_birth_date" = (a_record->>'t_employees_birth_date')::date,
+		"t_employees_position" = (a_record->>'t_employees_position')::integer,
+		"t_employees_residential_address" = (a_record->>'t_employees_residential_address')::varchar
+    WHERE
+		(t_e."t_employees_id" = (a_record->>'t_employees_id')::integer);
+    RETURN 200;
+EXCEPTION WHEN OTHERS THEN
+    RETURN 500;
+END
+$BODY$;
+COMMENT ON FUNCTION public.afunc_update_employee_json(json) IS 'Обновление данных сотрудника';
+
+CREATE OR REPLACE FUNCTION public.afunc_delete_employee_json(a_employee_id integer) RETURNS SMALLINT
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    b_employee_last_name varchar;
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM "t_employees" AS t_e
+        WHERE t_e."t_employees_id" = a_employee_id AND t_e."t_employees_last_name" NOT ILIKE '%(УДАЛЕН)%'
+    ) THEN
+        SELECT t_e."t_employees_last_name" INTO b_employee_last_name
+        FROM "t_employees" AS t_e
+        WHERE t_e."t_employees_id" = a_employee_id;
+
+        UPDATE "t_employees"
+        SET "t_employees_last_name" = CONCAT('(УДАЛЕН) ', b_employee_last_name)
+        WHERE "t_employees_id" = a_employee_id;
+
+        RETURN 204;
+    ELSE
+        RETURN 500;
+    END IF;
+EXCEPTION WHEN OTHERS THEN
+    RETURN 500;
+END
+$$;
+COMMENT ON FUNCTION public.afunc_delete_employee_json(a_employee_id integer) IS 'Удаление сотрудника';
+

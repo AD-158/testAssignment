@@ -1,0 +1,4 @@
+.idea
+*.pyc
+static/bootstrap_5
+static/bootstrap_icons

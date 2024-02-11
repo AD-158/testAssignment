@@ -145,7 +145,7 @@ function print_rows(arr) {
             "textContent": "Данные не найдены"}), "table_for_data", 0, "afterend");
 }
 
-// Выбор определенной детали
+// Выбор определенной должности
 document.getElementById('page_data').addEventListener("click", event => {
     if (my_string)
         delete my_string.dataset.selected;
