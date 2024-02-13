@@ -1,0 +1,33 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/*.profile,*/
+/*.reports,*/
+/*.products,*/
+/*.team,*/
+/*.reports {*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    justify-content: center;*/
+/*    font-size: 3rem;*/
+/*}*/
+
+.flex-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.item1 {
+    flex: 0 1 auto;
+}
+
+.item2 {
+    flex: 1 1 auto;
+}
+
+#root {
+  height: 100vh;
+}

@@ -1,0 +1,83 @@
+version: '3.8'
+# Поднимаем 4 сервиса: django, node, postgres, nginx, pgadmin - временно
+services:
+  backend:
+    # build будет из dockerfile
+    build: ./backend/
+    command: python manage.py runserver 0.0.0.0:8000
+    # перезапускать контейнер при завершении выполнения работы или при аварийном завершении
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/usr/src/app/
+      - static_volume:/usr/src/app/django_static
+      - media_volume:/usr/src/app/django_media
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - db
+
+  # Сервис БД
+  db:
+    build: ./postgres
+    # перезапускать контейнер при завершении выполнения работы или при аварийном завершении
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=test_assignment
+
+  nginx:
+    build: ./nginx
+    # перезапускать контейнер при завершении выполнения работы или при аварийном завершении
+    restart: always
+    ports:
+      - 80:80
+    depends_on:
+      - backend
+    volumes:
+      - static_volume:/home/src/app/django_static
+      - media_volume:/home/src/app/django_media
+
+  frontend:
+    # Аналогично, build
+    build: ./frontend
+    # рестарт
+    restart: always
+    # порты
+    ports:
+      - "3000:3000"
+    # команда при запуске
+    volumes:
+      - ./frontend/public/:/usr/src/app/public/
+      - ./frontend/src/:/usr/src/app/src/
+    command: npm start
+
+  pgadmin:
+    container_name: pgadmin_container_ta
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "user@domain.com"
+      PGADMIN_DEFAULT_PASSWORD: "postgres"
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "5050:80"
+    restart: always
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+
+volumes:
+    postgres_data:
+    static_volume:
+    media_volume:
+    pgadmin_data:
