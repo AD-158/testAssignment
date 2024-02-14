@@ -9,9 +9,16 @@ CREATE DATABASE test_assignment
     CONNECTION LIMIT = -1
     IS_TEMPLATE = False;
 
+CREATE TABLE IF NOT EXISTS public.t_position
+(
+    t_position_id serial NOT NULL,
+    t_position_name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT t_position_pkey PRIMARY KEY (t_position_id)
+);
+
 CREATE TABLE IF NOT EXISTS public.t_employees
 (
-    t_employees_id integer NOT NULL DEFAULT nextval('t_employees_t_employees_id_seq'::regclass),
+    t_employees_id serial NOT NULL,
     t_employees_last_name character varying(75) COLLATE pg_catalog."default" NOT NULL,
     t_employees_first_name character varying(50) COLLATE pg_catalog."default" NOT NULL,
     t_employees_patronymic character varying(75) COLLATE pg_catalog."default",
@@ -23,13 +30,6 @@ CREATE TABLE IF NOT EXISTS public.t_employees
         REFERENCES public.t_position (t_position_id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
-);
-
-CREATE TABLE IF NOT EXISTS public.t_position
-(
-    t_position_id integer NOT NULL DEFAULT nextval('t_position_t_position_id_seq'::regclass),
-    t_position_name character varying(255) COLLATE pg_catalog."default" NOT NULL,
-    CONSTRAINT t_position_pkey PRIMARY KEY (t_position_id)
 );
 
 CREATE OR REPLACE FUNCTION public.afunc_get_positions_json() RETURNS json

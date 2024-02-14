@@ -19,11 +19,12 @@ addEventListener("resize", () => { table_resize(); pagination_resize(); })
 
 // Обновление данных
 async function update_data() {
-    let res = await fetch(url_positions_api);
     try {
+        let res = await fetch(url_positions_api);
         position_data = await res.json();
     } catch (err) {
         position_data = null;
+        document.querySelectorAll('main')[0].innerHTML = '<h3 class="text-center no_data">"Нет соединения с сервером!"</h3>'
         console.log("no positions")
     }
 }
@@ -34,11 +35,16 @@ async function get_data_to_page(page_number) {
     // Обновить данных
     await update_data();
     if (position_data === null) {
-        clear_table_and_hide_pagination(0, ".page_data", 'table_for_data');
+        clear_table_and_hide_pagination(1, ".page_data", 'table_for_data', 'pagination');
         if (!document.querySelector('.no_data')) {
         insert_new_element(create_element("h3", {"classList":["text-center","no_data"],
             "textContent": "Данные не найдены"}), "table_for_data", 0, "afterend");
         }
+        try {
+            // выключить дополнительные кнопки
+            do_special_actions();
+        }
+        catch (e) { }
     } else {
         filtered_user_data1 = position_data;
         let val = 0; let date = 0;
@@ -219,8 +225,10 @@ document.getElementById('modal_window').addEventListener('shown.bs.modal', event
 // Поиск в отфильтрованном массиве
 function searchFor() {
     let toSearch = document.getElementById("search_filter").value.toLowerCase();
-    let results = position_data.filter(object => Object.values(object).some(i => i?i.toString().toLowerCase().includes(toSearch):false));
-    print_rows(results)
+    if (position_data !== null) {
+        let results = position_data.filter(object => Object.values(object).some(i => i ? i.toString().toLowerCase().includes(toSearch) : false));
+        print_rows(results)
+    }
 }
 
 let csrftoken = getCookie('csrftoken');

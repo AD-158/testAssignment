@@ -204,6 +204,7 @@ function change_pagination_state() {
 
 // Генерация datalist (Тип персонала)
 function generate_position_datalist(arr) {
+    document.querySelector(".select_position").innerHTML = null
     arr.forEach(element => {
         insert_new_element(create_element("option", {"data-value":element.t_position_id, "value":element.t_position_name}),
             ".select_position", 1, "beforeend");
@@ -223,10 +224,13 @@ function table_resize () {
 
 // Очистить таблицу, спрятать таблицу и пагинацию (если надо) к ней
 function clear_table_and_hide_pagination(turn_off_pagination, table_body_name, table_name, pagination_name) {
-    document.querySelector(table_body_name).innerHTML = "";
-    document.getElementById(table_name).hidden = true;
-    if (turn_off_pagination === 1)
-        document.getElementById(pagination_name).hidden = true;
+    try {
+        document.querySelector(table_body_name).innerHTML = "";
+        document.getElementById(table_name).hidden = true;
+        if (turn_off_pagination === 1)
+            document.getElementById(pagination_name).hidden = true;
+    }
+    catch (e) { }
 }
 
 // Сортировка по параметру
