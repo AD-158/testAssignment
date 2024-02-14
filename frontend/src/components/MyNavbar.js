@@ -82,59 +82,6 @@ export default function MyNavbar({open, handler, handleListItemClick, selectedIn
                     </Container>
                 </Navbar>
             )}
-            {/*{user ? (*/}
-            {/*    <Row className="fixed-top">*/}
-            {/*        <Col className="position-relative">*/}
-            {/*            <Navbar expand="lg" className="bg-white bg-body-tertiary" sticky="top">*/}
-            {/*                <Container fluid>*/}
-            {/*                    <Navbar.Brand href="#">Navbar scroll</Navbar.Brand>*/}
-            {/*                    <Navbar.Toggle aria-controls="navbarScroll" className="d-flex po"/>*/}
-            {/*                    <Navbar.Collapse id="navbarScroll" className="bg-white bg-body-tertiary">*/}
-            {/*                        <Nav*/}
-            {/*                            className="me-auto my-2 my-lg-0"*/}
-            {/*                            style={{maxHeight: '150px'}}*/}
-            {/*                            navbarScroll*/}
-            {/*                        >*/}
-            {/*                            <Nav.Link href="#action1">Home</Nav.Link>*/}
-            {/*                            <Nav.Link href="#action2">Link</Nav.Link>*/}
-            {/*                            <NavDropdown title="Link" id="navbarScrollingDropdown">*/}
-            {/*                                <NavDropdown.Item href="#action3">Action</NavDropdown.Item>*/}
-            {/*                                <NavDropdown.Item href="#action4">*/}
-            {/*                                    Another action*/}
-            {/*                                </NavDropdown.Item>*/}
-            {/*                                <NavDropdown.Divider/>*/}
-            {/*                                <NavDropdown.Item href="#action5">*/}
-            {/*                                    Something else here*/}
-            {/*                                </NavDropdown.Item>*/}
-            {/*                            </NavDropdown>*/}
-            {/*                            <Nav.Link href="#" disabled>*/}
-            {/*                                Link*/}
-            {/*                            </Nav.Link>*/}
-            {/*                        </Nav>*/}
-            {/*                        <Form className="d-flex">*/}
-            {/*                            <Form.Control*/}
-            {/*                                type="search"*/}
-            {/*                                placeholder="Search"*/}
-            {/*                                className="me-2"*/}
-            {/*                                aria-label="Search"*/}
-            {/*                            />*/}
-            {/*                            <Button variant="outline-success">Search</Button>*/}
-            {/*                        </Form>*/}
-            {/*                    </Navbar.Collapse>*/}
-            {/*                </Container>*/}
-            {/*            </Navbar>*/}
-            {/*        </Col>*/}
-            {/*        <Col xs="auto" className="px-0 position-absolute" style={{top:"0px", right:"8px"}}>*/}
-            {/*            <Navbar className="bg-body-tertiary" sticky="top">*/}
-            {/*                <Container fluid className="justify-content-end">*/}
-            {/*                    <Button variant="outline-danger" onClick={ logoutUser }>Выйти</Button>*/}
-            {/*                </Container>*/}
-            {/*            </Navbar>*/}
-            {/*        </Col>*/}
-            {/*    </Row>*/}
-            {/*) : (*/}
-            {/*    <></>*/}
-            {/*)}*/}
         </>
     );
 }

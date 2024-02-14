@@ -24,16 +24,19 @@ export const AuthProvider = ({children}) => {
         e.preventDefault()
         let csrftoken = getCookie('csrftoken');
 
-        let response = await fetch('http://localhost:80/auth/login/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken
-            },
-            body: JSON.stringify({'username': e.target.username.value, 'password': e.target.password.value, 'stay_logged_in': e.target.remember.checked})
-        })
-
         try {
+            let response = await fetch('http://localhost:80/auth/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    'username': e.target.username.value,
+                    'password': e.target.password.value,
+                    'stay_logged_in': e.target.remember.checked
+                })
+            })
             let data = await response.json();
             setValidated(true);
             if (data.hasOwnProperty('access')) {
@@ -69,17 +72,15 @@ export const AuthProvider = ({children}) => {
 
     let updateToken = async () => {
         let csrftoken = getCookie('csrftoken');
-
-        let response = await fetch('http://localhost:80/auth/refresh/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken
-            },
-            body: JSON.stringify({'access': authTokens})
-        })
-
         try {
+            let response = await fetch('http://localhost:80/auth/refresh/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({'access': authTokens})
+            })
             let data = await response.json();
 
             if (data.hasOwnProperty('access')) {

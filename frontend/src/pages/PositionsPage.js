@@ -216,7 +216,6 @@ const PositionsPage = () => {
                 setShow(false)
                 getData()
             })
-
     }
 
     const handlePageChange = (pageNumber) => {
