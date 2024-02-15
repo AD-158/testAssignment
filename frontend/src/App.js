@@ -8,6 +8,8 @@ import LoginPage from './pages/LoginPage'
 import EmployeesPage from './pages/EmployeesPage';
 import PositionsPage from "./pages/PositionsPage";
 
+export const MyContext = React.createContext();
+
 const usePrevious = (value) => {
     const ref = React.useRef()
     React.useEffect(() => {
@@ -23,6 +25,10 @@ export default function App() {
     const [open, setOpen] = React.useState(false);
     const [width, setWidth] = React.useState(0)
     const [height, setHeight] = React.useState(0)
+    const location = useLocation().pathname.replaceAll('/', '');
+    const prevLocation = usePrevious(location);
+    const [selectedIndex, setSelectedIndex] = React.useState(location);
+    const [searchValue, setSearchValue] = React.useState("");
 
     let updateDimensions = () => {
         setWidth(window.innerWidth);
@@ -43,10 +49,6 @@ export default function App() {
     function handler(open) {
         setOpen(!open)
     }
-
-    const location = useLocation().pathname.replaceAll('/', '');
-    const prevLocation = usePrevious(location);
-    const [selectedIndex, setSelectedIndex] = React.useState(location);
 
     const handleListItemClick = (index) => {
         setSelectedIndex(index);
@@ -69,19 +71,22 @@ export default function App() {
 
     return (
         <>
-            <MyNavbar open={open} handler={handler} handleListItemClick={handleListItemClick} selectedIndex={selectedIndex}/>
+            <MyNavbar open={open} handler={handler} handleListItemClick={handleListItemClick}
+                      selectedIndex={selectedIndex} setSearchValue={setSearchValue}/>
             <main role="main">
-                <Routes>
-                    <Route path='/' element={<PrivateRoute/>}>
-                        <Route path='/employees' element={<EmployeesPage height={height - 80}/>}/>
-                    </Route>
-                    <Route path='/' element={<PrivateRoute/>}>
-                        <Route path='/positions' element={<PositionsPage height={height - 80}/>}/>
-                    </Route>
-                    {/*<Route exact path='/register' element={<Register/>}/>*/}
-                    <Route path='/login' element={user ? <Navigate to="/employees" replace/> : <LoginPage/>}/>
-                    <Route path="*" element={<Navigate to="/employees" replace/>}/>
-                </Routes>
+                <MyContext.Provider value={searchValue}>
+                    <Routes>
+                        <Route path='/' element={<PrivateRoute/>}>
+                            <Route path='/employees' element={<EmployeesPage searchValue={searchValue}/>}/>
+                        </Route>
+                        <Route path='/' element={<PrivateRoute/>}>
+                            <Route path='/positions' element={<PositionsPage searchValue={searchValue}/>}/>
+                        </Route>
+                        {/*<Route exact path='/register' element={<Register/>}/>*/}
+                        <Route path='/login' element={user ? <Navigate to="/employees" replace/> : <LoginPage/>}/>
+                        <Route path="*" element={<Navigate to="/employees" replace/>}/>
+                    </Routes>
+                </MyContext.Provider>
             </main>
         </>
     );

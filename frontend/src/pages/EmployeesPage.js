@@ -4,6 +4,7 @@ import {Button, Col, Container, Form, InputGroup, Row, Stack, Table} from "react
 import MyPagination from "../components/Pagination";
 import MyModal from "../components/MyModal";
 import "../components/styles.css"
+import {MyContext} from "../App";
 
 const EmployeesPage = () => {
     const {authTokens, logoutUser} = useContext(AuthContext);
@@ -22,14 +23,9 @@ const EmployeesPage = () => {
     let [chosenPosition, setChosenPosition] = useState("");
     let [url, setUrl] = useState('http://localhost/api/employees_api/create/');
     let [method, setMethod] = useState('POST');
-    const [selectValue,setSelectValue] = useState("-1");
-    let [headers, setHeaders] = useState(
-        {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + String(authTokens)
-        }
-    );
+    const [selectValue, setSelectValue] = useState("-1");
     const [selectedRowIndex, setSelectedRowIndex] = useState(null);
+    const searchValue = useContext(MyContext);
     const handleTableRowClick = (index, last_name) => {
         if (!last_name.includes("УДАЛЕН"))
             setSelectedRowIndex(index);
@@ -55,7 +51,8 @@ const EmployeesPage = () => {
                             pattern="(^((.|\s)*\S(.|\s)*)$)"
                             key={1}
                         />
-                        <Form.Control.Feedback type="invalid">Пожалуйста, введите не пустую фамилию!</Form.Control.Feedback>
+                        <Form.Control.Feedback type="invalid">Пожалуйста, введите не пустую
+                            фамилию!</Form.Control.Feedback>
                     </Form.Group>
                 </Row>
                 <Row className="mb-3">
@@ -113,7 +110,8 @@ const EmployeesPage = () => {
                             >
                                 <option key={-1} value="">Выберите должность...</option>
                                 {jsonPositions.map((item) => (
-                                    <option key={item.t_position_id}  value={item.t_position_id}>{item.t_position_name}</option>
+                                    <option key={item.t_position_id}
+                                            value={item.t_position_id}>{item.t_position_name}</option>
                                 ))}
                             </Form.Control>
                             <Button variant="outline-success" onClick={handleAddPositionButtonClick}>Добавить</Button>
@@ -243,7 +241,8 @@ const EmployeesPage = () => {
                             >
                                 <option key={-1} value="">Выберите должность...</option>
                                 {jsonPositions.map((item) => (
-                                    <option key={item.t_position_id} value={item.t_position_id}>{item.t_position_name}</option>
+                                    <option key={item.t_position_id}
+                                            value={item.t_position_id}>{item.t_position_name}</option>
                                 ))}
                             </Form.Control>
                             <Button variant="outline-success">Добавить</Button>
@@ -330,7 +329,8 @@ const EmployeesPage = () => {
                             pattern="(^((.|\s)*\S(.|\s)*)$)"
                             key={1}
                         />
-                        <Form.Control.Feedback type="invalid">Пожалуйста, введите не пустое наименование!</Form.Control.Feedback>
+                        <Form.Control.Feedback type="invalid">Пожалуйста, введите не пустое
+                            наименование!</Form.Control.Feedback>
                     </Form.Group>
                 </Row>
             </>
@@ -369,10 +369,13 @@ const EmployeesPage = () => {
     useEffect(() => {
         getData()
     }, [currentPage, itemsPerPage])
+    useEffect(() => {
+        getData()
+    }, [searchValue])
 
     async function getData() {
 
-        let response = await fetch(url_positions, { // Изменение URL для загрузки данных только для текущей страницы
+        let response = await fetch(url_positions, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -385,7 +388,13 @@ const EmployeesPage = () => {
         } else if (response.statusText === 'Unauthorized') {
             logoutUser()
         }
-        response = await fetch(`${url_employees}?page=${currentPage}&limit=${itemsPerPage}`, {
+        let searchUrl;
+        if ((searchValue) && (searchValue !== "")) {
+            searchUrl = `${url_employees}?page=${currentPage}&limit=${itemsPerPage}&search=${searchValue}`
+        } else {
+            searchUrl = `${url_employees}?page=${currentPage}&limit=${itemsPerPage}`
+        }
+        response = await fetch(searchUrl, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -398,7 +407,12 @@ const EmployeesPage = () => {
         } else if (response.statusText === 'Unauthorized') {
             logoutUser()
         }
-        response = await fetch(`http://localhost/api/employees_api/count/`, {
+        if ((searchValue) && (searchValue !== "")) {
+            searchUrl = `http://localhost/api/employees_api/count?search=${searchValue}`
+        } else {
+            searchUrl = `http://localhost/api/employees_api/count/`
+        }
+        response = await fetch(searchUrl, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -471,83 +485,91 @@ const EmployeesPage = () => {
                      titleText={titleText} sentData={sentData} setSelectValue={setSelectValue}/>
             <Container className="py-2 shadow-lg position-relative" style={{top: "70px"}}>
                 <Row className="py-2 px-1">
-                    <Col>
-                        <Button variant="success" onClick={handleAddButtonClick}>Добавить</Button>
-                    </Col>
-                    <Col className="text-end">
-                        <Stack direction="horizontal" gap={3}>
-                            <Button className="ms-auto" variant="warning" onClick={handleUpdateButtonClick}
-                                    disabled={selectedRowIndex === null}>
-                                Изменить
-                            </Button>
-                            <Button variant="danger" onClick={handleDeleteButtonClick}
-                                    disabled={selectedRowIndex === null}>
-                                Удалить
-                            </Button>
-                        </Stack>
-                    </Col>
-                </Row>
-                <Row className="px-1">
-                    <Table bordered hover responsive className="align-middle">
-                        <thead>
-                        <tr className="align-middle text-center">
-                            <th className="bg-white sorted" id="t_employees_last_name" style={{minWidth: "100px"}}>
-                                Фамилия
-                            </th>
-                            <th className="bg-white sorted" id="t_employees_first_name">Имя</th>
-                            <th className="bg-white sorted" id="t_employees_patronymic">Отчество</th>
-                            <th className="bg-white sorted" id="t_employees_birth_date" style={{minWidth: "148px"}}>
-                                Дата рождения
-                            </th>
-                            <th className="bg-white sorted" id="t_position_name" style={{minWidth: "100px"}}>
-                                Должность
-                            </th>
-                            <th className="bg-white sorted" id="t_employees_residential_address">
-                                Адрес проживания
-                            </th>
-                        </tr>
-                        </thead>
-                        <tbody className="page_data" id="page_data">
-                        {
-                            jsonEmployees.map((item) => (
-                                <tr key={item.t_employees_id}
-                                    className={(selectedRowIndex === item.t_employees_id) ? "data-selected" : ""}
-                                    onClick={() => handleTableRowClick(item.t_employees_id, item.t_employees_last_name)}>
-                                    <td>{item.t_employees_last_name}</td>
-                                    <td>{item.t_employees_first_name}</td>
-                                    <td>{item.t_employees_patronymic}</td>
-                                    <td>{item.t_employees_birth_date}</td>
-                                    <td>{item.t_employees_position.t_position_name}</td>
-                                    <td>{item.t_employees_residential_address}</td>
+                            <Col>
+                                <Button variant="success" onClick={handleAddButtonClick}>Добавить</Button>
+                            </Col>
+                            <Col className="text-end">
+                                <Stack direction="horizontal" gap={3}>
+                                    <Button className="ms-auto" variant="warning" onClick={handleUpdateButtonClick}
+                                            disabled={selectedRowIndex === null}>
+                                        Изменить
+                                    </Button>
+                                    <Button variant="danger" onClick={handleDeleteButtonClick}
+                                            disabled={selectedRowIndex === null}>
+                                        Удалить
+                                    </Button>
+                                </Stack>
+                            </Col>
+                        </Row>
+                {jsonEmployees.length !== 0 ? (
+                    <>
+                        <Row className="px-1">
+                            <Table bordered hover responsive className="align-middle">
+                                <thead>
+                                <tr className="align-middle text-center">
+                                    <th className="bg-white sorted" id="t_employees_last_name"
+                                        style={{minWidth: "100px"}}>
+                                        Фамилия
+                                    </th>
+                                    <th className="bg-white sorted" id="t_employees_first_name">Имя</th>
+                                    <th className="bg-white sorted" id="t_employees_patronymic">Отчество</th>
+                                    <th className="bg-white sorted" id="t_employees_birth_date"
+                                        style={{minWidth: "148px"}}>
+                                        Дата рождения
+                                    </th>
+                                    <th className="bg-white sorted" id="t_position_name" style={{minWidth: "100px"}}>
+                                        Должность
+                                    </th>
+                                    <th className="bg-white sorted" id="t_employees_residential_address">
+                                        Адрес проживания
+                                    </th>
                                 </tr>
-                            ))
-                        }
-                        </tbody>
-                    </Table>
-                </Row>
-                <Row className="ms-0 py-lg-3 d-flex">
-                    <Col className="d-flex justify-content-center align-items-center py-2">
-                        <MyPagination number_of_pg={numberOfPages} total_pages_number={totalPages}
-                                      handlePageChange={handlePageChange} currentPage={currentPage}/>
-                    </Col>
-                    <Col md="auto" className="d-flex align-items-center py-2">
-                        <InputGroup className="d-flex align-items-center">
-                            <Form.Text className="px-2">Показывать по </Form.Text>
-                            <Form.Select onChange={handleChange} value={itemsPerPage}>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="10">10</option>
-                                <option value="15">15</option>
-                                <option value="20">20</option>
-                                <option value="25">25</option>
-                                <option value="50">50</option>
-                            </Form.Select>
-                        </InputGroup>
-                    </Col>
-                </Row>
+                                </thead>
+                                <tbody className="page_data" id="page_data">
+                                {
+                                    jsonEmployees.map((item) => (
+                                        <tr key={item.t_employees_id}
+                                            className={(selectedRowIndex === item.t_employees_id) ? "data-selected" : ""}
+                                            onClick={() => handleTableRowClick(item.t_employees_id, item.t_employees_last_name)}>
+                                            <td>{item.t_employees_last_name}</td>
+                                            <td>{item.t_employees_first_name}</td>
+                                            <td>{item.t_employees_patronymic}</td>
+                                            <td>{item.t_employees_birth_date}</td>
+                                            <td>{item.t_employees_position.t_position_name}</td>
+                                            <td>{item.t_employees_residential_address}</td>
+                                        </tr>
+                                    ))
+                                }
+                                </tbody>
+                            </Table>
+                        </Row>
+                        <Row className="ms-0 py-lg-3 d-flex">
+                            <Col className="d-flex justify-content-center align-items-center py-2">
+                                <MyPagination number_of_pg={numberOfPages} total_pages_number={totalPages}
+                                              handlePageChange={handlePageChange} currentPage={currentPage}/>
+                            </Col>
+                            <Col md="auto" className="d-flex align-items-center py-2">
+                                <InputGroup className="d-flex align-items-center">
+                                    <Form.Text className="px-2">Показывать по </Form.Text>
+                                    <Form.Select onChange={handleChange} value={itemsPerPage}>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="10">10</option>
+                                        <option value="15">15</option>
+                                        <option value="20">20</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                    </Form.Select>
+                                </InputGroup>
+                            </Col>
+                        </Row>
+                    </>
+                ) : (
+                    <h3 className="text-center no_data">"Нет данных!"</h3>
+                )}
             </Container>
         </>
     );

@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework.pagination import PageNumberPagination
 
 from .models import TEmployees, TPosition
 
@@ -18,9 +17,3 @@ class TEmployeesSerializer(serializers.ModelSerializer):
         fields = (
             't_employees_id', 't_employees_last_name', 't_employees_first_name', 't_employees_patronymic',
             't_employees_birth_date', 't_employees_position', 't_employees_residential_address')
-
-
-class TEmployeesPagination(PageNumberPagination):
-    page_size = 5
-    page_size_query_param = 'page_size'
-    max_page_size = 100

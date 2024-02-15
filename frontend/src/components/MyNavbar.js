@@ -4,12 +4,13 @@ import SubMenu from "./SubMenu";
 import "./Navbar.css";
 import AuthContext from '../context/AuthContext'
 import {SidebarData} from "./SidebarData";
-import {Container, ListGroup, Nav, Navbar} from "react-bootstrap";
+import {Container, ListGroup, Nav, Navbar, Form, InputGroup, Button} from "react-bootstrap";
 
-export default function MyNavbar({open, handler, handleListItemClick, selectedIndex}) {
+export default function MyNavbar({open, handler, handleListItemClick, selectedIndex, setSearchValue}) {
     let {user, logoutUser} = React.useContext(AuthContext)
     const {authTokens} = React.useContext(AuthContext);
     const [greeting, setGreeting] = React.useState(null);
+    const [search, setSearch] = React.useState("");
 
     function returnGreeting(name) {
         // ToDo а надо ли время?
@@ -74,6 +75,26 @@ export default function MyNavbar({open, handler, handleListItemClick, selectedIn
                                              handleListItemClick={handleListItemClick} selectedIndex={selectedIndex}/>
                                 </ListGroup>
                             ))}
+                            <ListGroup as="nav-link" key="search" className="ms-auto">
+                                <ListGroup.Item key="search_item">
+                                    <Nav.Link key="search_link" className="text-center p-2">
+                                        <InputGroup>
+                                            <Form.Control
+                                                placeholder="Поиск по таблице"
+                                                aria-describedby="basic-addon2"
+                                                value={search}
+                                                onChange={event => setSearch(event.target.value)}
+                                            />
+                                            <Button variant="danger" onClick={() => setSearch("")}
+                                                    style={{marginLeft: '0.5px'}}>
+                                                <i className="bi bi-x-circle"></i></Button>
+                                            <Button type="submit" style={{color: 'white'}} onClick={() => setSearchValue(search)}>
+                                                <i className="bi bi-search"></i> Найти
+                                            </Button>
+                                        </InputGroup>
+                                    </Nav.Link>
+                                </ListGroup.Item>
+                            </ListGroup>
                         </Navbar.Collapse>
                         <Nav.Link key="logout_2" onClick={logoutUser} className="justify-content-end d-none d-lg-block">
                             <span style={{color: 'white'}}><i className="bi bi-box-arrow-right"/></span>

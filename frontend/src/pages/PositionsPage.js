@@ -4,6 +4,7 @@ import {Button, Col, Container, Form, InputGroup, Row, Stack, Table} from "react
 import MyPagination from "../components/Pagination";
 import MyModal from "../components/MyModal";
 import "../components/styles.css"
+import {MyContext} from "../App";
 
 const PositionsPage = () => {
     const {authTokens, logoutUser} = useContext(AuthContext);
@@ -21,6 +22,7 @@ const PositionsPage = () => {
     let [url, setUrl] = useState('http://localhost/api/positions_api/create/');
     let [method, setMethod] = useState('POST');
     const [selectedRowIndex, setSelectedRowIndex] = useState(null);
+    const searchValue = useContext(MyContext);
     const handleTableRowClick = (index, last_name) => {
         if (!last_name.includes("УДАЛЕН"))
             setSelectedRowIndex(index);
@@ -164,9 +166,19 @@ const PositionsPage = () => {
     useEffect(() => {
         getData()
     }, [currentPage, itemsPerPage])
+    useEffect(() => {
+        getData()
+    }, [searchValue])
 
     async function getData() {
-        let response = await fetch(`${url_positions}?page=${currentPage}&limit=${itemsPerPage}`, {
+        let searchUrl;
+        if ((searchValue) && (searchValue !== "")) {
+            searchUrl = `${url_positions}?page=${currentPage}&limit=${itemsPerPage}&search=${searchValue}`
+        }
+        else {
+            searchUrl = `${url_positions}?page=${currentPage}&limit=${itemsPerPage}`
+        }
+        let response = await fetch(searchUrl, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -179,7 +191,13 @@ const PositionsPage = () => {
         } else if (response.statusText === 'Unauthorized') {
             logoutUser()
         }
-        response = await fetch(`http://localhost/api/positions_api/count/`, {
+        if ((searchValue) && (searchValue !== "")) {
+            searchUrl = `http://localhost/api/positions_api/count?search=${searchValue}`
+        }
+        else {
+            searchUrl = `http://localhost/api/positions_api/count/`
+        }
+        response = await fetch(searchUrl, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -229,65 +247,71 @@ const PositionsPage = () => {
                      titleText={titleText} sentData={sentData}/>
             <Container className="py-2 shadow-lg position-relative" style={{top: "70px"}}>
                 <Row className="py-2 px-1">
-                    <Col>
-                        <Button variant="success" onClick={handleAddButtonClick}>Добавить</Button>
-                    </Col>
-                    <Col className="text-end">
-                        <Stack direction="horizontal" gap={3}>
-                            <Button className="ms-auto" variant="warning" onClick={handleUpdateButtonClick}
-                                    disabled={selectedRowIndex === null}>
-                                Изменить
-                            </Button>
-                            <Button variant="danger" onClick={handleDeleteButtonClick}
-                                    disabled={selectedRowIndex === null}>
-                                Удалить
-                            </Button>
-                        </Stack>
-                    </Col>
-                </Row>
-                <Row className="px-1">
-                    <Table bordered hover responsive className="align-middle">
-                        <thead>
-                        <tr className="align-middle text-center">
-                            <th className="bg-white sorted" id="t_position_name">Наименование должности</th>
-                        </tr>
-                        </thead>
-                        <tbody className="page_data align-middle text-center" id="page_data">
-                        {
-                            jsonPositions.map((item) => (
-                                <tr key={item.t_position_id}
-                                    className={(selectedRowIndex === item.t_position_id) ? "data-selected" : ""}
-                                    onClick={() => handleTableRowClick(item.t_position_id, item.t_position_name)}>
-                                    <td>{item.t_position_name}</td>
+                            <Col>
+                                <Button variant="success" onClick={handleAddButtonClick}>Добавить</Button>
+                            </Col>
+                            <Col className="text-end">
+                                <Stack direction="horizontal" gap={3}>
+                                    <Button className="ms-auto" variant="warning" onClick={handleUpdateButtonClick}
+                                            disabled={selectedRowIndex === null}>
+                                        Изменить
+                                    </Button>
+                                    <Button variant="danger" onClick={handleDeleteButtonClick}
+                                            disabled={selectedRowIndex === null}>
+                                        Удалить
+                                    </Button>
+                                </Stack>
+                            </Col>
+                        </Row>
+                { jsonPositions.length !== 0 ? (
+                    <>
+                        <Row className="px-1">
+                            <Table bordered hover responsive className="align-middle">
+                                <thead>
+                                <tr className="align-middle text-center">
+                                    <th className="bg-white sorted" id="t_position_name">Наименование должности</th>
                                 </tr>
-                            ))
-                        }
-                        </tbody>
-                    </Table>
-                </Row>
-                <Row className="ms-0 py-lg-3 d-flex">
-                    <Col className="d-flex justify-content-center align-items-center py-2">
-                        <MyPagination number_of_pg={numberOfPages} total_pages_number={totalPages}
-                                      handlePageChange={handlePageChange} currentPage={currentPage}/>
-                    </Col>
-                    <Col md="auto" className="d-flex align-items-center py-2">
-                        <InputGroup className="d-flex align-items-center">
-                            <Form.Text className="px-2">Показывать по </Form.Text>
-                            <Form.Select onChange={handleChange} value={itemsPerPage}>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="10">10</option>
-                                <option value="15">15</option>
-                                <option value="20">20</option>
-                                <option value="25">25</option>
-                                <option value="50">50</option>
-                            </Form.Select>
-                        </InputGroup>
-                    </Col>
-                </Row>
+                                </thead>
+                                <tbody className="page_data align-middle text-center" id="page_data">
+                                {
+                                    jsonPositions.map((item) => (
+                                        <tr key={item.t_position_id}
+                                            className={(selectedRowIndex === item.t_position_id) ? "data-selected" : ""}
+                                            onClick={() => handleTableRowClick(item.t_position_id, item.t_position_name)}>
+                                            <td>{item.t_position_name}</td>
+                                        </tr>
+                                    ))
+                                }
+                                </tbody>
+                            </Table>
+                        </Row>
+                        <Row className="ms-0 py-lg-3 d-flex">
+                            <Col className="d-flex justify-content-center align-items-center py-2">
+                                <MyPagination number_of_pg={numberOfPages} total_pages_number={totalPages}
+                                              handlePageChange={handlePageChange} currentPage={currentPage}/>
+                            </Col>
+                            <Col md="auto" className="d-flex align-items-center py-2">
+                                <InputGroup className="d-flex align-items-center">
+                                    <Form.Text className="px-2">Показывать по </Form.Text>
+                                    <Form.Select onChange={handleChange} value={itemsPerPage}>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="10">10</option>
+                                        <option value="15">15</option>
+                                        <option value="20">20</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                    </Form.Select>
+                                </InputGroup>
+                            </Col>
+                        </Row>
+                    </>
+                ) : (
+                    <h3 className="text-center no_data">"Нет данных!"</h3>
+                )}
             </Container>
         </>
     );

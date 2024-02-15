@@ -3,6 +3,7 @@ import re
 from datetime import datetime
 
 from django.db import connection, DatabaseError
+from django.db.models import Q
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -42,7 +43,17 @@ def get_positions_count(request):
         # а надо ли?
         auth_user = decode_jwt_token(token)['auth_user']
         try:
-            positions = TPosition.objects.all()
+            try:
+                search_query = request.GET.get('search')
+            except:
+                search_query = None
+            if search_query is not None:
+                positions = TPosition.objects.filter(
+                    Q(t_position_id__icontains=search_query) |
+                    Q(t_position_name__icontains=search_query)
+                )
+            else:
+                positions = TPosition.objects.all()
             total_positions = positions.count()
             return JsonResponse({'total_positions': total_positions})
         except:
@@ -59,7 +70,17 @@ def get_positions(request):
         # а надо ли?
         auth_user = decode_jwt_token(token)['auth_user']
         try:
-            positions = TPosition.objects.all()
+            try:
+                search_query = request.GET.get('search')
+            except:
+                search_query = None
+            if search_query is not None:
+                positions = TPosition.objects.filter(
+                    Q(t_position_id__icontains=search_query) |
+                    Q(t_position_name__icontains=search_query)
+                )
+            else:
+                positions = TPosition.objects.all()
             try:
                 limit = int(request.GET.get('limit'))
             except:
@@ -155,7 +176,22 @@ def get_employees(request):
         # а надо ли?
         auth_user = decode_jwt_token(token)['auth_user']
         try:
-            employees = TEmployees.objects.all()
+            try:
+                search_query = request.GET.get('search')
+            except:
+                search_query = None
+            if search_query is not None:
+                employees = TEmployees.objects.filter(
+                    Q(t_employees_id__icontains=search_query) |
+                    Q(t_employees_last_name__icontains=search_query) |
+                    Q(t_employees_first_name__icontains=search_query) |
+                    Q(t_employees_patronymic__icontains=search_query) |
+                    Q(t_employees_birth_date__icontains=search_query) |
+                    Q(t_employees_position__t_position_name__icontains=search_query) |
+                    Q(t_employees_residential_address__icontains=search_query)
+                )
+            else:
+                employees = TEmployees.objects.all()
             try:
                 limit = int(request.GET.get('limit'))
             except:
@@ -183,7 +219,22 @@ def get_employees_count(request):
         # а надо ли?
         auth_user = decode_jwt_token(token)['auth_user']
         try:
-            employees = TEmployees.objects.all()
+            try:
+                search_query = request.GET.get('search')
+            except:
+                search_query = None
+            if search_query is not None:
+                employees = TEmployees.objects.filter(
+                    Q(t_employees_id__icontains=search_query) |
+                    Q(t_employees_last_name__icontains=search_query) |
+                    Q(t_employees_first_name__icontains=search_query) |
+                    Q(t_employees_patronymic__icontains=search_query) |
+                    Q(t_employees_birth_date__icontains=search_query) |
+                    Q(t_employees_position__t_position_name__icontains=search_query) |
+                    Q(t_employees_residential_address__icontains=search_query)
+                )
+            else:
+                employees = TEmployees.objects.all()
             total_employees = employees.count()
             return JsonResponse({'total_employees': total_employees})
         except:
