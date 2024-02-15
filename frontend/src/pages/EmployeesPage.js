@@ -465,14 +465,17 @@ const EmployeesPage = () => {
                 .then(data => {
                     switch (data["error"]) {
                         case "All fields are required":
-                            alert("Не все поля были заполнены!")
-                            break;
-                        case "Employee must be at least 15 years old":
-                            alert("Сотрудник должен быть старше 15 лет!")
-                            break;
-                        default:
-                            alert("ФИО должны содержать только русские буквы!")
-                            break;
+                                alert("Не все поля были заполнены!")
+                                break;
+                            case "Employee must be at least 15 years old":
+                                alert("Сотрудник должен быть старше 15 лет!")
+                                break;
+                            case "Name fields should contain only Russian letters":
+                                alert("ФИО должны содержать только русские буквы!")
+                                break;
+                            default:
+                                alert("Произошла ошибка при сохранении!")
+                                break;
                     }
                 })
             )

@@ -116,7 +116,7 @@ def get_all_positions(request):
         # а надо ли?
         auth_user = decode_jwt_token(token)['auth_user']
         try:
-            positions = TPosition.objects.all().exclude(t_position_name__icontains='УДАЛЕН')
+            positions = TPosition.objects.all()
             serializer = TPositionSerializer(positions, many=True)
             return JsonResponse(data=serializer.data, safe=False)
         except:
