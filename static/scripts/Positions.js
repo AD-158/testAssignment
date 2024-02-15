@@ -24,7 +24,16 @@ async function update_data() {
         position_data = await res.json();
     } catch (err) {
         position_data = null;
-        document.querySelectorAll('main')[0].innerHTML = '<h3 class="text-center no_data">"Нет соединения с сервером!"</h3>'
+        document.getElementById("pagination").hidden = true
+        if (!document.querySelector('.no_data')) {
+        insert_new_element(create_element("h3", {"classList":["text-center","no_data"],
+            "textContent": "Данные не найдены или нет соединения с сервером"}), "table_for_data", 0, "afterend");
+        }
+        try {
+            // выключить дополнительные кнопки
+            do_special_actions();
+        }
+        catch (e) { }
         console.log("no positions")
     }
 }
@@ -86,7 +95,8 @@ async function get_data_to_page(page_number) {
 
 get_data_to_page(0).then(() => {
     // включить пагинацию
-    document.getElementById('toggleCheck').checked = true;
+    if (document.getElementById('toggleCheck'))
+        document.getElementById('toggleCheck').checked = true;
 }).catch(function (err) {
     console.log(err)
 });
@@ -125,25 +135,34 @@ function do_special_actions(){
 
 // Отрисовка строк таблицы СписокДолжностей
 function print_rows(arr) {
-    clear_table_and_hide_pagination(0, ".page_data", 'table_for_data');
+    clear_table_and_hide_pagination(1, ".page_data", 'table_for_data', 'pagination');
     // если массив существует
     if (arr) {
-        // отобразить спрятанные таблицу, удалив заглушку об отсутствующих данных, если она существует
-        if (document.querySelector('.no_data'))
-            document.querySelector('.no_data').remove();
-        document.getElementById('table_for_data').hidden = false;
+        if (arr.length !== 0) {
+            // отобразить спрятанные таблицу, удалив заглушку об отсутствующих данных, если она существует
+            if (document.querySelector('.no_data'))
+                document.querySelector('.no_data').remove();
+            document.getElementById('table_for_data').hidden = false;
+            document.getElementById("pagination").hidden = false;
 
-        // создать строчки таблицы
-        arr.forEach(element => {
-            let oRow = document.createElement('tr');
+            // создать строчки таблицы
+            arr.forEach(element => {
+                let oRow = document.createElement('tr');
 
-            oRow.dataset.t_position_id = element["t_position_id"];
-            oRow.dataset.t_position_name = element["t_position_name"];
+                oRow.dataset.t_position_id = element["t_position_id"];
+                oRow.dataset.t_position_name = element["t_position_name"];
 
-            oRow.insertCell().textContent = element["t_position_name"];
+                oRow.insertCell().textContent = element["t_position_name"];
 
-            document.querySelector(".page_data").append(oRow);
-        });
+                document.querySelector(".page_data").append(oRow);
+            });
+        }
+        // иначе отрисовать заглушку об отсутствующих данных, если ее еще нет
+        else if (!document.querySelector('.no_data'))
+            insert_new_element(create_element("h3", {
+                "classList": ["text-center", "no_data"],
+                "textContent": "Данные не найдены"
+            }), "table_for_data", 0, "afterend");
     }
     // иначе отрисовать заглушку об отсутствующих данных, если ее еще нет
     else if (!document.querySelector('.no_data'))

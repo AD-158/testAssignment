@@ -205,10 +205,15 @@ function change_pagination_state() {
 // Генерация datalist (Тип персонала)
 function generate_position_datalist(arr) {
     document.querySelector(".select_position").innerHTML = null
-    arr.forEach(element => {
-        insert_new_element(create_element("option", {"data-value":element.t_position_id, "value":element.t_position_name}),
-            ".select_position", 1, "beforeend");
-    });
+    if (arr) {
+        arr.forEach(element => {
+            insert_new_element(create_element("option", {
+                    "data-value": element.t_position_id,
+                    "value": element.t_position_name
+                }),
+                ".select_position", 1, "beforeend");
+        });
+    }
 }
 
 // Изменение размера таблицы(без включенной пагинации) в зависимости от размера видимого пользователю окна

@@ -79,7 +79,6 @@ def delete_position(request):
     try:
         with connection.cursor() as c:
             position = request.data.get('t_position_id')
-            print(position)
             if position is None:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -119,7 +118,7 @@ def create_employee(request):
         if not all(field in request.data for field in required_fields):
             return Response({"error": "All fields are required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Проверка возраста сотрудника
+        # Проверка возраста сотрудника (>15)
         birth_date = request.data['t_employees_birth_date']
         if (calculate_age(datetime.strptime(birth_date, '%Y-%m-%d'))) < 15:
             return Response({"error": "Employee must be at least 15 years old"}, status=status.HTTP_400_BAD_REQUEST)
@@ -127,7 +126,6 @@ def create_employee(request):
         # Проверка ФИО на наличие только русских букв
         name_fields = ['t_employees_last_name', 't_employees_first_name', 't_employees_patronymic']
         for field in name_fields:
-            print(field, request.data[field])
             if not re.match(r'^[а-яА-ЯёЁ]*$', request.data[field]):
                 return Response({"error": "Name fields should contain only Russian letters"},
                                 status=status.HTTP_400_BAD_REQUEST)
