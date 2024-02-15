@@ -82,6 +82,14 @@ def get_positions(request):
             else:
                 positions = TPosition.objects.all()
             try:
+                sort_column = request.GET.get('sort_column')
+                sort_order = request.GET.get('sort_order')
+            except:
+                sort_column = None
+                sort_order = None
+            if sort_column is not None:
+                positions = positions.order_by(f'-{sort_column}' if sort_order == 'desc' else sort_column)
+            try:
                 limit = int(request.GET.get('limit'))
             except:
                 limit = 5
@@ -192,6 +200,21 @@ def get_employees(request):
                 )
             else:
                 employees = TEmployees.objects.all()
+            try:
+                sort_column = request.GET.get('sort_column')
+                sort_order = request.GET.get('sort_order')
+            except:
+                sort_column = None
+                sort_order = None
+            if sort_column is not None:
+                if sort_column == 't_position_name':
+                    sort_column = 't_employees_position__t_position_name'
+                    employees = TEmployees.objects.select_related('t_employees_position').order_by(
+                        f'-{sort_column}' if sort_order == 'desc' else sort_column)
+                else:
+                    employees = TEmployees.objects.order_by(f'-{sort_column}' if sort_order == 'desc' else sort_column)
+
+                employees = employees.order_by(f'-{sort_column}' if sort_order == 'desc' else sort_column)
             try:
                 limit = int(request.GET.get('limit'))
             except:

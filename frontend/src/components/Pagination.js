@@ -74,7 +74,6 @@ export default function MyPagination({number_of_pg, total_pages_number, handlePa
                     );
                 }
             }
-            // иначе
             else {
                 paginationItems.push(
                     <Pagination.Item active={total_pages_number === currentPage} onClick={() => handlePageChange(0)} key={1}>

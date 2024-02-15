@@ -26,9 +26,20 @@ const EmployeesPage = () => {
     const [selectValue, setSelectValue] = useState("-1");
     const [selectedRowIndex, setSelectedRowIndex] = useState(null);
     const searchValue = useContext(MyContext);
+    const [sortColumn, setSortColumn] = useState(null);
+    const [sortOrder, setSortOrder] = useState(null);
     const handleTableRowClick = (index, last_name) => {
         if (!last_name.includes("УДАЛЕН"))
             setSelectedRowIndex(index);
+    };
+
+    const handleSortClick = (column) => {
+        if (sortColumn === column) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortColumn(column);
+            setSortOrder('asc');
+        }
     };
 
     const handleAddButtonClick = () => {
@@ -363,8 +374,8 @@ const EmployeesPage = () => {
     }, []);
 
 
-    let url_positions = 'http://localhost/api/positions_api/filtered/'; // URL API для данных
-    let url_employees = 'http://localhost/api/employees_api/'; // URL API для данных
+    let url_positions = 'http://localhost/api/positions_api/filtered/';
+    let url_employees = 'http://localhost/api/employees_api/';
 
     useEffect(() => {
         getData()
@@ -372,6 +383,9 @@ const EmployeesPage = () => {
     useEffect(() => {
         getData()
     }, [searchValue])
+    useEffect(() => {
+        getData()
+    }, [sortColumn,sortOrder])
 
     async function getData() {
 
@@ -393,6 +407,9 @@ const EmployeesPage = () => {
             searchUrl = `${url_employees}?page=${currentPage}&limit=${itemsPerPage}&search=${searchValue}`
         } else {
             searchUrl = `${url_employees}?page=${currentPage}&limit=${itemsPerPage}`
+        }
+        if (sortOrder && sortColumn) {
+            searchUrl += `&sort_order=${sortOrder}&sort_column=${sortColumn}`;
         }
         response = await fetch(searchUrl, {
             method: 'GET',
@@ -435,7 +452,7 @@ const EmployeesPage = () => {
 
     let sentData = async (data) => {
         let csrftoken = getCookie('csrftoken');
-        let response = await fetch(url, { // Изменение URL для загрузки данных только для текущей страницы
+        let response = await fetch(url, {
             method: method,
             headers: {
                 'Content-Type': 'application/json',
@@ -507,21 +524,59 @@ const EmployeesPage = () => {
                             <Table bordered hover responsive className="align-middle">
                                 <thead>
                                 <tr className="align-middle text-center">
-                                    <th className="bg-white sorted" id="t_employees_last_name"
-                                        style={{minWidth: "100px"}}>
+                                    <th className={`bg-white ${sortColumn === 't_employees_last_name' ? sortOrder : 'desc'}`}
+                                        id="t_employees_last_name" onClick={() => handleSortClick('t_employees_last_name')}
+                                        style={{minWidth: "110px"}}>
                                         Фамилия
+                                        {sortColumn === 't_employees_last_name' && sortOrder === 'asc' &&
+                                            <i className="bi bi-arrow-down"></i>}
+                                        {sortColumn === 't_employees_last_name' && sortOrder === 'desc' &&
+                                            <i className="bi bi-arrow-up"></i>}
                                     </th>
-                                    <th className="bg-white sorted" id="t_employees_first_name">Имя</th>
-                                    <th className="bg-white sorted" id="t_employees_patronymic">Отчество</th>
-                                    <th className="bg-white sorted" id="t_employees_birth_date"
-                                        style={{minWidth: "148px"}}>
+                                    <th className={`bg-white ${sortColumn === 't_employees_first_name' ? sortOrder : 'desc'}`}
+                                        id="t_employees_first_name" onClick={() => handleSortClick('t_employees_first_name')}
+                                        style={{minWidth: "77px"}}>
+                                        Имя
+                                        {sortColumn === 't_employees_first_name' && sortOrder === 'asc' &&
+                                            <i className="bi bi-arrow-down"></i>}
+                                        {sortColumn === 't_employees_first_name' && sortOrder === 'desc' &&
+                                            <i className="bi bi-arrow-up"></i>}
+                                    </th>
+                                    <th className={`bg-white ${sortColumn === 't_employees_patronymic' ? sortOrder : 'desc'}`}
+                                        id="t_employees_patronymic" onClick={() => handleSortClick('t_employees_patronymic')}
+                                        style={{minWidth: "110px"}}>
+                                        Отчество
+                                        {sortColumn === 't_employees_patronymic' && sortOrder === 'asc' &&
+                                            <i className="bi bi-arrow-down"></i>}
+                                        {sortColumn === 't_employees_patronymic' && sortOrder === 'desc' &&
+                                            <i className="bi bi-arrow-up"></i>}
+                                    </th>
+                                    <th className={`bg-white ${sortColumn === 't_employees_birth_date' ? sortOrder : 'desc'}`}
+                                        id="t_employees_birth_date" onClick={() => handleSortClick('t_employees_birth_date')}
+                                        style={{minWidth: "155px"}}>
                                         Дата рождения
+                                        {sortColumn === 't_employees_birth_date' && sortOrder === 'asc' &&
+                                            <i className="bi bi-arrow-down"></i>}
+                                        {sortColumn === 't_employees_birth_date' && sortOrder === 'desc' &&
+                                            <i className="bi bi-arrow-up"></i>}
                                     </th>
-                                    <th className="bg-white sorted" id="t_position_name" style={{minWidth: "100px"}}>
+                                    <th className={`bg-white ${sortColumn === 't_position_name' ? sortOrder : 'desc'}`}
+                                        id="t_position_name" onClick={() => handleSortClick('t_position_name')}
+                                        style={{minWidth: "125px"}}>
                                         Должность
+                                        {sortColumn === 't_position_name' && sortOrder === 'asc' &&
+                                            <i className="bi bi-arrow-down"></i>}
+                                        {sortColumn === 't_position_name' && sortOrder === 'desc' &&
+                                            <i className="bi bi-arrow-up"></i>}
                                     </th>
-                                    <th className="bg-white sorted" id="t_employees_residential_address">
+                                    <th className={`bg-white ${sortColumn === 't_employees_residential_address' ? sortOrder : 'desc'}`}
+                                        id="t_employees_residential_address" onClick={() => handleSortClick('t_employees_residential_address')}
+                                        style={{minWidth: "155px"}}>
                                         Адрес проживания
+                                        {sortColumn === 't_employees_residential_address' && sortOrder === 'asc' &&
+                                            <i className="bi bi-arrow-down"></i>}
+                                        {sortColumn === 't_employees_residential_address' && sortOrder === 'desc' &&
+                                            <i className="bi bi-arrow-up"></i>}
                                     </th>
                                 </tr>
                                 </thead>

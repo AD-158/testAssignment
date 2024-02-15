@@ -40,7 +40,6 @@ export default function MyNavbar({open, handler, handleListItemClick, selectedIn
                 }
             });
             if (response.status === 200) {
-                // console.log(response)
                 let data = await response.json()
                 setGreeting(returnGreeting(data.username))
             } else if (response.statusText === 'Unauthorized') {

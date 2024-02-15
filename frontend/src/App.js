@@ -20,7 +20,6 @@ const usePrevious = (value) => {
 
 export default function App() {
     let {user} = React.useContext(AuthContext)
-    // const theme = useTheme();
     const [light, setLight] = React.useState(true);
     const [open, setOpen] = React.useState(false);
     const [width, setWidth] = React.useState(0)

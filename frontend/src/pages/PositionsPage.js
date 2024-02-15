@@ -23,9 +23,21 @@ const PositionsPage = () => {
     let [method, setMethod] = useState('POST');
     const [selectedRowIndex, setSelectedRowIndex] = useState(null);
     const searchValue = useContext(MyContext);
+    const [sortColumn, setSortColumn] = useState(null);
+    const [sortOrder, setSortOrder] = useState(null);
+
     const handleTableRowClick = (index, last_name) => {
         if (!last_name.includes("УДАЛЕН"))
             setSelectedRowIndex(index);
+    };
+
+    const handleSortClick = (column) => {
+        if (sortColumn === column) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortColumn(column);
+            setSortOrder('asc');
+        }
     };
 
     const handleAddButtonClick = () => {
@@ -48,7 +60,8 @@ const PositionsPage = () => {
                             pattern="(^((.|\s)*\S(.|\s)*)$)"
                             key={1}
                         />
-                        <Form.Control.Feedback type="invalid">Пожалуйста, введите не пустое наименование!</Form.Control.Feedback>
+                        <Form.Control.Feedback type="invalid">Пожалуйста, введите не пустое
+                            наименование!</Form.Control.Feedback>
                     </Form.Group>
                 </Row>
             </>
@@ -57,7 +70,7 @@ const PositionsPage = () => {
     };
     const handleUpdateButtonClick = () => {
         let selectedPosition = null
-         jsonPositions.forEach(el => {
+        jsonPositions.forEach(el => {
             if (el.t_position_id === selectedRowIndex) {
                 selectedPosition = el
             }
@@ -93,7 +106,8 @@ const PositionsPage = () => {
                             pattern="(^((.|\s)*\S(.|\s)*)$)"
                             key={2}
                         />
-                        <Form.Control.Feedback type="invalid">Пожалуйста, введите не пустое название!</Form.Control.Feedback>
+                        <Form.Control.Feedback type="invalid">Пожалуйста, введите не пустое
+                            название!</Form.Control.Feedback>
                     </Form.Group>
                 </Row>
             </>
@@ -161,7 +175,7 @@ const PositionsPage = () => {
     }, []);
 
 
-    let url_positions = 'http://localhost/api/positions_api/'; // URL API для данных
+    let url_positions = 'http://localhost/api/positions_api/';
 
     useEffect(() => {
         getData()
@@ -169,14 +183,19 @@ const PositionsPage = () => {
     useEffect(() => {
         getData()
     }, [searchValue])
+    useEffect(() => {
+        getData()
+    }, [sortColumn,sortOrder])
 
     async function getData() {
         let searchUrl;
         if ((searchValue) && (searchValue !== "")) {
             searchUrl = `${url_positions}?page=${currentPage}&limit=${itemsPerPage}&search=${searchValue}`
-        }
-        else {
+        } else {
             searchUrl = `${url_positions}?page=${currentPage}&limit=${itemsPerPage}`
+        }
+        if (sortOrder && sortColumn) {
+            searchUrl += `&sort_order=${sortOrder}&sort_column=${sortColumn}`;
         }
         let response = await fetch(searchUrl, {
             method: 'GET',
@@ -193,8 +212,7 @@ const PositionsPage = () => {
         }
         if ((searchValue) && (searchValue !== "")) {
             searchUrl = `http://localhost/api/positions_api/count?search=${searchValue}`
-        }
-        else {
+        } else {
             searchUrl = `http://localhost/api/positions_api/count/`
         }
         response = await fetch(searchUrl, {
@@ -220,7 +238,7 @@ const PositionsPage = () => {
 
     let sentData = async (data) => {
         let csrftoken = getCookie('csrftoken');
-        let response = await fetch(url, { // Изменение URL для загрузки данных только для текущей страницы
+        let response = await fetch(url, {
             method: method,
             headers: {
                 'Content-Type': 'application/json',
@@ -247,29 +265,36 @@ const PositionsPage = () => {
                      titleText={titleText} sentData={sentData}/>
             <Container className="py-2 shadow-lg position-relative" style={{top: "70px"}}>
                 <Row className="py-2 px-1">
-                            <Col>
-                                <Button variant="success" onClick={handleAddButtonClick}>Добавить</Button>
-                            </Col>
-                            <Col className="text-end">
-                                <Stack direction="horizontal" gap={3}>
-                                    <Button className="ms-auto" variant="warning" onClick={handleUpdateButtonClick}
-                                            disabled={selectedRowIndex === null}>
-                                        Изменить
-                                    </Button>
-                                    <Button variant="danger" onClick={handleDeleteButtonClick}
-                                            disabled={selectedRowIndex === null}>
-                                        Удалить
-                                    </Button>
-                                </Stack>
-                            </Col>
-                        </Row>
-                { jsonPositions.length !== 0 ? (
+                    <Col>
+                        <Button variant="success" onClick={handleAddButtonClick}>Добавить</Button>
+                    </Col>
+                    <Col className="text-end">
+                        <Stack direction="horizontal" gap={3}>
+                            <Button className="ms-auto" variant="warning" onClick={handleUpdateButtonClick}
+                                    disabled={selectedRowIndex === null}>
+                                Изменить
+                            </Button>
+                            <Button variant="danger" onClick={handleDeleteButtonClick}
+                                    disabled={selectedRowIndex === null}>
+                                Удалить
+                            </Button>
+                        </Stack>
+                    </Col>
+                </Row>
+                {jsonPositions.length !== 0 ? (
                     <>
                         <Row className="px-1">
                             <Table bordered hover responsive className="align-middle">
                                 <thead>
                                 <tr className="align-middle text-center">
-                                    <th className="bg-white sorted" id="t_position_name">Наименование должности</th>
+                                    <th className={`bg-white ${sortColumn === 't_position_name' ? sortOrder : 'desc'}`}
+                                        id="t_position_name" onClick={() => handleSortClick('t_position_name')}>
+                                        Наименование должности
+                                        {sortColumn === 't_position_name' && sortOrder === 'asc' &&
+                                            <i className="bi bi-arrow-down"></i>}
+                                        {sortColumn === 't_position_name' && sortOrder === 'desc' &&
+                                            <i className="bi bi-arrow-up"></i>}
+                                    </th>
                                 </tr>
                                 </thead>
                                 <tbody className="page_data align-middle text-center" id="page_data">
